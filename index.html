@@ -412,17 +412,10 @@
           </p>
 
           <form id="importForm" class="simple-form">
-            <div class="input-group">
-              <label for="semesterTerm">Semester term</label>
-              <select id="semesterTerm" required>
-                <option value="" disabled selected>Select term</option>
-                <option value="Fall">Fall</option>
-                <option value="Winter">Winter</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label for="semesterYear">Academic year</label>
-              <select id="semesterYear" required>
+            <div class="input-group" style="grid-column: 1 / -1">
+              <label for="semesterSelect">Select Semester</label>
+              <select id="semesterSelect" required>
+                <option value="" disabled selected>-- Choose Semester --</option>
               </select>
             </div>
             <div class="input-group" style="grid-column: 1 / -1">
