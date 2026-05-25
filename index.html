@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="FlexGPA - Calculate your GPA and CGPA with ease" />
+    <meta name="theme-color" content="#020617" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%2322c55e' width='180' height='180'/><text x='50%' y='50%' font-size='80' fill='white' text-anchor='middle' dy='.3em' font-weight='bold'>F</text></svg>" />
+    <title>FlexGPA - GPA Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="brand">
+          <svg class="logo-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <rect width="32" height="32" rx="8" fill="url(#logoGrad)" opacity="0.9"/>
+            <text x="16" y="22" font-size="18" fill="#ecfdf5" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="bold">📊</text>
+          </svg>
+          <span class="logo-text">FlexGPA</span>
+        </div>
+
+        <nav id="featureNav" class="feature-nav">
+          <button
+            class="feature-tab feature-tab-active"
+            data-target="gpaCalcCard"
+          >
+            Sem GPA
+          </button>
+          <button class="feature-tab" data-target="instantCgpaCard">
+            Instant
+          </button>
+          <button class="feature-tab" data-target="cgpaBySemCard">CGPA</button>
+          <button class="feature-tab" data-target="targetGpaCard">Target</button>
+          <button class="feature-tab" data-target="importCard">Import</button>
+        </nav>
+
+        <div class="header-actions">
+          <button id="installBtn" class="icon-button" aria-label="Install as app">
+            <span class="icon">⬇️</span>
+            <span>Install</span>
+          </button>
+          <button id="themeToggle" class="icon-button" aria-label="Toggle theme">
+            <span class="icon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <section class="card calc-card" id="gpaCalcCard">
+          <h2 class="section-title">Semester GPA</h2>
+          <p class="section-subtitle">
+            Add each course, its credits, and grade to get your GPA.
+          </p>
+
+          <form id="courseForm" class="inline-form">
+            <div class="input-group">
+              <label for="courseTitle">Course title (optional)</label>
+              <input
+                type="text"
+                id="courseTitle"
+                placeholder="e.g., Data Structures"
+              />
+            </div>
+            <div class="input-group">
+              <label for="courseCredits">Credits</label>
+              <select id="courseCredits" required>
+                <option value="" disabled selected>Select</option>
+                <option value="1">1</option>
+                <option value="1.5">1.5</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="courseGrade">Grade</label>
+              <select id="courseGrade" required>
+                <option value="" disabled selected>Select</option>
+                <option value="S">S</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="N">N</option>
+              </select>
+            </div>
+            <button type="submit" class="primary-button">
+              Add course
+            </button>
+          </form>
+
+          <div class="table-wrapper">
+            <table class="data-table" id="coursesTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Course</th>
+                  <th>Credits</th>
+                  <th>Grade</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="result-row">
+            <div>
+              <p class="result-label">Total credits</p>
+              <p id="gpaTotalCredits" class="result-value">0</p>
+            </div>
+            <div>
+              <p class="result-label">GPA</p>
+              <p id="gpaResult" class="result-value highlight">0.00</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card calc-card" id="instantCgpaCard">
+          <h2 class="section-title">Instant CGPA</h2>
+          <p class="section-subtitle">
+            See your updated CGPA using your previous stats and this
+            semester's GPA.
+          </p>
+
+          <form id="instantCgpaForm" class="simple-form">
+            <div class="input-group">
+              <label for="prevCredits">Total credits till previous sem</label>
+              <input
+                type="number"
+                step="0.01"
+                id="prevCredits"
+                required
+                min="0"
+                placeholder="e.g., 80"
+              />
+            </div>
+            <div class="input-group">
+              <label for="prevCgpa">CGPA till previous sem</label>
+              <input
+                type="number"
+                step="0.01"
+                id="prevCgpa"
+                required
+                min="0"
+                max="10"
+                placeholder="e.g., 8.25"
+              />
+            </div>
+            <div class="input-group">
+              <label for="currentCredits">Current sem credits</label>
+              <input
+                type="number"
+                step="0.01"
+                id="currentCredits"
+                required
+                min="0"
+                placeholder="e.g., 20"
+              />
+            </div>
+            <div class="input-group">
+              <label for="currentGpa">Current sem GPA</label>
+              <input
+                type="number"
+                step="0.01"
+                id="currentGpa"
+                required
+                min="0"
+                max="10"
+                placeholder="e.g., 8.75"
+              />
+            </div>
+            <button type="submit" class="primary-button full-width">
+              Calculate CGPA
+            </button>
+          </form>
+
+          <div class="result-row">
+            <div>
+              <p class="result-label">Total credits</p>
+              <p id="instantTotalCredits" class="result-value">0</p>
+            </div>
+            <div>
+              <p class="result-label">CGPA</p>
+              <p id="instantCgpaResult" class="result-value highlight">
+                0.00
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card calc-card" id="cgpaBySemCard">
+          <h2 class="section-title">CGPA by Semester</h2>
+          <p class="section-subtitle">
+            Add each semester's credits and GPA to see your overall CGPA.
+          </p>
+
+          <div class="input-group" style="margin-bottom: 0.75rem; grid-column: 1 / -1">
+            <label>Add from stored semesters</label>
+            <div id="cgpaStoredSemestersList" class="checkbox-list"></div>
+            <button type="button" id="addSelectedToCgpaBtn" class="secondary-button" style="margin-top: 0.5rem; width: fit-content;">Add Selected</button>
+          </div>
+
+          <form id="semesterForm" class="inline-form">
+            <div class="input-group">
+              <label for="semesterLabel">Semester (optional)</label>
+              <input
+                type="text"
+                id="semesterLabel"
+                placeholder="e.g., Sem 3"
+              />
+            </div>
+            <div class="input-group">
+              <label for="semesterCredits">Total credits</label>
+              <input
+                type="number"
+                step="0.01"
+                id="semesterCredits"
+                required
+                min="0"
+                placeholder="e.g., 20"
+              />
+            </div>
+            <div class="input-group">
+              <label for="semesterGpa">GPA</label>
+              <input
+                type="number"
+                step="0.01"
+                id="semesterGpa"
+                required
+                min="0"
+                max="10"
+                placeholder="e.g., 8.5"
+              />
+            </div>
+            <button type="submit" class="primary-button">
+              Add semester
+            </button>
+          </form>
+
+          <div class="table-wrapper">
+            <table class="data-table" id="semestersTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Semester</th>
+                  <th>Credits</th>
+                  <th>GPA</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="result-row">
+            <div>
+              <p class="result-label">Total credits</p>
+              <p id="cgpaTotalCredits" class="result-value">0</p>
+            </div>
+            <div>
+              <p class="result-label">CGPA</p>
+              <p id="cgpaResult" class="result-value highlight">0.00</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card calc-card hidden" id="targetGpaCard">
+          <h2 class="section-title">Target GPA Calculator</h2>
+          <p class="section-subtitle">
+            Calculate the GPA you need this semester to reach your desired CGPA.
+          </p>
+
+          <div class="tabs-container">
+            <button class="tab-btn tab-btn-active" data-tab="tab-stored">
+              Use Stored Data
+            </button>
+            <button class="tab-btn" data-tab="tab-manual">
+              Manual Entry
+            </button>
+          </div>
+
+          <div id="tab-stored" class="tab-content active">
+            <form id="targetGpaFormStored" class="simple-form">
+              <div class="input-group" style="grid-column: 1 / -1">
+                <label>Select Semesters (Components of Current CGPA)</label>
+                <div id="targetStoredSemestersList" class="checkbox-list">
+                  <!-- Checkboxes injected here -->
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="targetCgpaDesired">Desired CGPA</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="targetCgpaDesired"
+                  required
+                  min="0"
+                  max="10"
+                  placeholder="e.g., 9.0"
+                />
+              </div>
+              <div class="input-group" style="grid-column: 1 / -1">
+                <label for="targetCurrentSemCredits">Current Semester Credits</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="targetCurrentSemCredits"
+                  required
+                  min="0"
+                  placeholder="e.g., 20"
+                />
+              </div>
+              <button type="submit" class="primary-button full-width" style="grid-column: 1 / -1">
+                Calculate Required GPA
+              </button>
+            </form>
+          </div>
+
+          <div id="tab-manual" class="tab-content">
+            <form id="targetGpaFormManual" class="simple-form">
+              <div class="input-group">
+                <label for="targetCurrentCgpa">Current CGPA</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="targetCurrentCgpa"
+                  required
+                  min="0"
+                  max="10"
+                  placeholder="e.g., 8.5"
+                />
+              </div>
+              <div class="input-group">
+                <label for="targetCompletedCredits">Credits Completed</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="targetCompletedCredits"
+                  required
+                  min="0"
+                  placeholder="e.g., 60"
+                />
+              </div>
+              <div class="input-group">
+                <label for="targetDesiredCgpaManual">Desired CGPA</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="targetDesiredCgpaManual"
+                  required
+                  min="0"
+                  max="10"
+                  placeholder="e.g., 9.0"
+                />
+              </div>
+              <div class="input-group">
+                <label for="targetCurrentSemCreditsManual">Current Sem Credits</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="targetCurrentSemCreditsManual"
+                  required
+                  min="0"
+                  placeholder="e.g., 20"
+                />
+              </div>
+              <button type="submit" class="primary-button full-width" style="grid-column: 1 / -1">
+                Calculate Required GPA
+              </button>
+            </form>
+          </div>
+
+          <div id="targetResultContainer" class="result-row hidden">
+            <div>
+              <p class="result-label">Required GPA</p>
+              <p id="targetResultGpa" class="result-value highlight">0.00</p>
+            </div>
+            <div>
+              <p class="result-label">Status</p>
+              <p id="targetResultStatus" class="result-value">-</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card calc-card hidden" id="importCard">
+          <h2 class="section-title">Import Semester Data</h2>
+          <p class="section-subtitle">
+            Paste your marks table to store courses and auto-fill GPA/CGPA later.
+          </p>
+
+          <form id="importForm" class="simple-form">
+            <div class="input-group">
+              <label for="semesterTerm">Semester term</label>
+              <select id="semesterTerm" required>
+                <option value="" disabled selected>Select term</option>
+                <option value="Fall">Fall</option>
+                <option value="Winter">Winter</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="semesterYear">Academic year</label>
+              <select id="semesterYear" required>
+              </select>
+            </div>
+            <div class="input-group" style="grid-column: 1 / -1">
+              <label for="rawTranscript">Paste semester result text</label>
+              <div class="vtop-instructions">
+                <p class="instruction-text">
+                  <strong>📋 How to copy:</strong> Go to <strong>VTOP → Examinations → Grades</strong>, select a semester, then copy text from the <strong>Sl.No.</strong> column header to the end (including the <strong>GPA :</strong> line).
+                </p>
+              </div>
+              <textarea
+                id="rawTranscript"
+                rows="6"
+                placeholder='Paste the table text here, including the line that starts with "GPA :"'
+                style="width: 100%; resize: vertical"
+                required
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="primary-button full-width"
+              style="grid-column: 1 / -1"
+            >
+              Parse &amp; Save Semester
+            </button>
+          </form>
+
+          <div class="table-wrapper" id="storedSemestersWrapper">
+            <table class="data-table" id="storedSemestersTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Term</th>
+                  <th>Year</th>
+                  <th>Courses</th>
+                  <th>Total Credits</th>
+                  <th>Graded Credits</th>
+                  <th>GPA</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
