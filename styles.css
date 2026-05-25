@@ -948,5 +948,5 @@ body {
 /* Fix Import Semesters Scrolling Issue */
 #storedSemestersWrapper {
   max-height: none;
-  overflow: visible;
+  overflow-x: auto;
 }
