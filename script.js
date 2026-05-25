@@ -623,23 +623,46 @@ function setupFeatureNav() {
 
 function setupImportCard() {
   const form = document.getElementById("importForm");
-  const yearSelect = document.getElementById("semesterYear");
-  const termSelect = document.getElementById("semesterTerm");
+  const semesterSelect = document.getElementById("semesterSelect");
   const rawArea = document.getElementById("rawTranscript");
   const tableBody = document.querySelector("#storedSemestersTable tbody");
-  if (!form || !yearSelect || !termSelect || !rawArea || !tableBody) return;
+  if (!form || !semesterSelect || !rawArea || !tableBody) return;
 
-  const currentYear = 2025;
+  const now = new Date();
+  let currentYear = now.getFullYear();
+  // Academic year increments in June (month index 5)
+  if (now.getMonth() < 5) {
+    currentYear -= 1;
+  }
+
   const count = 8;
-  yearSelect.innerHTML =
-    '<option value="" disabled selected>Select year</option>';
+  semesterSelect.innerHTML = '<option value="" disabled selected>-- Choose Semester --</option>';
+
   for (let i = 0; i < count; i += 1) {
     const start = currentYear - i;
-    const label = `${start}-${start + 1}`;
-    const opt = document.createElement("option");
-    opt.value = label;
-    opt.textContent = label;
-    yearSelect.appendChild(opt);
+    const label = `${start}-${String(start + 1).slice(-2)}`;
+    
+    let terms = ["Summer", "Winter", "Fall"];
+    if (i === 0) {
+      const month = now.getMonth();
+      if (month >= 5 && month < 10) {
+        // June to October: Only Fall has started
+        terms = ["Fall"];
+      } else if (month >= 10 || month < 4) {
+        // November to April (next year): Winter has started
+        terms = ["Winter", "Fall"];
+      } else if (month === 4) {
+        // May: Summer has started
+        terms = ["Summer", "Winter", "Fall"];
+      }
+    }
+    
+    terms.forEach(term => {
+        const opt = document.createElement("option");
+        opt.value = `${term}_${label}`;
+        opt.textContent = `${term} Semester ${label}`;
+        semesterSelect.appendChild(opt);
+    });
   }
 
   function renderStored() {
@@ -1222,8 +1245,9 @@ function setupImportCard() {
       alert("Please sign in first to store semester data.");
       return;
     }
-    const term = termSelect.value;
-    const yearLabel = yearSelect.value;
+    
+    if (!semesterSelect.value) return;
+    const [term, yearLabel] = semesterSelect.value.split("_");
     const text = rawArea.value.trim();
     if (!term || !yearLabel || !text) return;
 
