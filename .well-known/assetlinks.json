@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.tikoye.twa",
+        "sha256_cert_fingerprints": ["4F:59:BA:6B:79:4F:8E:2D:87:46:E1:26:47:DC:5C:49:10:7A:27:94:17:37:12:16:4F:50:15:E1:E6:2D:50:ED"]
+      }
+    }]
