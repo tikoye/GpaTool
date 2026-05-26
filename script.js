@@ -415,11 +415,17 @@ function setupCgpaBySemester() {
           const gpa = typeof sem.gpa === 'number' ? sem.gpa : 0;
           
           if (gradedCredits > 0) {
-            semesters.push({
-              label: `${sem.term || ""} ${sem.yearLabel || ""}`.trim(),
-              credits: gradedCredits,
-              gpa: gpa,
-            });
+            const label = `${sem.term || ""} ${sem.yearLabel || ""}`.trim();
+            const isDuplicate = semesters.some((s) => s.label === label);
+            if (!isDuplicate) {
+              semesters.push({
+                label: label,
+                credits: gradedCredits,
+                gpa: gpa,
+              });
+            } else {
+              alert(`Semester '${label}' is already added!`);
+            }
           }
         }
         cb.checked = false;
@@ -879,7 +885,7 @@ function setupImportCard() {
       let type = "Theory Only"; 
       let typeIndex = -1;
       
-      const knownTypes = ["Theory Only", "Lab Only", "Embedded Theory and Lab", "Soft Skill", "Online Course"];
+      const knownTypes = ["Theory Only", "Lab Only", "Embedded Theory and Lab", "Soft Skill", "Online Course", "Project"];
       
       for(let j=codeIndex+1; j<parts.length; j++) {
           const val = parts[j];
@@ -1189,7 +1195,7 @@ function setupImportCard() {
                   <th>Course Title</th>
                   <th>Type</th>
                   <th>Credits</th>
-                  <th>Total</th>
+                  <th>Mark</th>
                   <th>Grade</th>
                 </tr>
               </thead>
