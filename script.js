@@ -1046,7 +1046,7 @@ function setupImportCard() {
         
         // 2. Identify Course Type (Theory Only etc.)
         const typeIdx = cleanParts.findIndex((p, idx) => 
-            idx > codeIdx && /theory|lab|embedded|online|soft/i.test(p)
+            idx > codeIdx && /theory|lab|embedded|online|soft|project/i.test(p)
         );
         
         let type = "Theory";
