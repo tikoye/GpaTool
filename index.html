@@ -65,10 +65,15 @@
 
       <main class="app-main">
         <section class="card calc-card" id="gpaCalcCard">
-          <h2 class="section-title">Semester GPA</h2>
-          <p class="section-subtitle">
-            Add each course, its credits, and grade to get your GPA.
-          </p>
+          <div class="section-header-flex">
+            <div>
+              <h2 class="section-title">Semester GPA</h2>
+              <p class="section-subtitle">
+                Add each course, its credits, and grade to get your GPA.
+              </p>
+            </div>
+            <button type="button" class="icon-button reset-btn" id="resetSemGpaBtn" title="Reset Section">🔄</button>
+          </div>
 
           <form id="courseForm" class="inline-form">
             <div class="input-group">
@@ -139,11 +144,16 @@
         </section>
 
         <section class="card calc-card" id="instantCgpaCard">
-          <h2 class="section-title">Instant CGPA</h2>
-          <p class="section-subtitle">
-            See your updated CGPA using your previous stats and this
-            semester's GPA.
-          </p>
+          <div class="section-header-flex">
+            <div>
+              <h2 class="section-title">Instant CGPA</h2>
+              <p class="section-subtitle">
+                See your updated CGPA using your previous stats and this
+                semester's GPA.
+              </p>
+            </div>
+            <button type="button" class="icon-button reset-btn" id="resetInstantCgpaBtn" title="Reset Section">🔄</button>
+          </div>
 
           <form id="instantCgpaForm" class="simple-form">
             <div class="input-group">
@@ -212,10 +222,15 @@
         </section>
 
         <section class="card calc-card" id="cgpaBySemCard">
-          <h2 class="section-title">CGPA by Semester</h2>
-          <p class="section-subtitle">
-            Add each semester's credits and GPA to see your overall CGPA.
-          </p>
+          <div class="section-header-flex">
+            <div>
+              <h2 class="section-title">CGPA by Semester</h2>
+              <p class="section-subtitle">
+                Add each semester's credits and GPA to see your overall CGPA.
+              </p>
+            </div>
+            <button type="button" class="icon-button reset-btn" id="resetCgpaBtn" title="Reset Section">🔄</button>
+          </div>
 
           <div class="input-group" style="margin-bottom: 0.75rem; grid-column: 1 / -1">
             <label>Add from stored semesters</label>
@@ -288,10 +303,15 @@
         </section>
 
         <section class="card calc-card hidden" id="targetGpaCard">
-          <h2 class="section-title">Target GPA Calculator</h2>
-          <p class="section-subtitle">
-            Calculate the GPA you need this semester to reach your desired CGPA.
-          </p>
+          <div class="section-header-flex">
+            <div>
+              <h2 class="section-title">Target GPA Calculator</h2>
+              <p class="section-subtitle">
+                Calculate the GPA you need this semester to reach your desired CGPA.
+              </p>
+            </div>
+            <button type="button" class="icon-button reset-btn" id="resetTargetGpaBtn" title="Reset Section">🔄</button>
+          </div>
 
           <div class="tabs-container">
             <button class="tab-btn tab-btn-active" data-tab="tab-stored">
