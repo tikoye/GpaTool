@@ -964,3 +964,17 @@ body {
   max-height: none;
   overflow-x: auto;
 }
+
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.section-header-flex .section-subtitle {
+  margin-bottom: 1.25rem;
+}
+.reset-btn {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
