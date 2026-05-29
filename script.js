@@ -90,6 +90,10 @@ function setupGpaCalculator() {
   if (!form || !tableBody) return;
 
   const courses = [];
+  try {
+    const saved = localStorage.getItem("gpaflex_semgpa_courses");
+    if (saved) { courses.push(...JSON.parse(saved)); }
+  } catch(e) {}
 
   function render() {
     tableBody.innerHTML = "";
@@ -124,6 +128,7 @@ function setupGpaCalculator() {
         render();
       });
     });
+    localStorage.setItem("gpaflex_semgpa_courses", JSON.stringify(courses));
   }
 
   tableBody.addEventListener("click", (e) => {
@@ -187,6 +192,19 @@ function setupGpaCalculator() {
     $("#courseGrade").selectedIndex = 0;
     render();
   });
+
+  const resetBtn = $("#resetSemGpaBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset Semester GPA data?")) {
+        courses.length = 0;
+        render();
+      }
+    });
+  }
+
+  // Initial render to show loaded courses
+  setTimeout(render, 0);
 }
 
 function setupInstantCgpa() {
@@ -195,8 +213,7 @@ function setupInstantCgpa() {
   const cgpaResultEl = $("#instantCgpaResult");
   if (!form) return;
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
+  function calculateInstantCgpa() {
     const prevCredits = Number($("#prevCredits").value);
     const prevCgpa = Number($("#prevCgpa").value);
     const currentCredits = Number($("#currentCredits").value);
@@ -217,7 +234,49 @@ function setupInstantCgpa() {
 
     totalCreditsEl.textContent = totalCredits.toFixed(2).replace(/\.00$/, "");
     cgpaResultEl.textContent = cgpa.toFixed(2);
+  }
+
+  try {
+    const saved = localStorage.getItem("gpaflex_instant_cgpa");
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.prevCredits) $("#prevCredits").value = data.prevCredits;
+      if (data.prevCgpa) $("#prevCgpa").value = data.prevCgpa;
+      if (data.currentCredits) $("#currentCredits").value = data.currentCredits;
+      if (data.currentGpa) $("#currentGpa").value = data.currentGpa;
+      // Auto calculate if all fields are filled
+      if (data.prevCredits && data.prevCgpa && data.currentCredits && data.currentGpa) {
+        calculateInstantCgpa();
+      }
+    }
+  } catch(e) {}
+
+  form.addEventListener("input", () => {
+    const data = {
+      prevCredits: $("#prevCredits").value,
+      prevCgpa: $("#prevCgpa").value,
+      currentCredits: $("#currentCredits").value,
+      currentGpa: $("#currentGpa").value
+    };
+    localStorage.setItem("gpaflex_instant_cgpa", JSON.stringify(data));
   });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    calculateInstantCgpa();
+  });
+
+  const resetBtn = $("#resetInstantCgpaBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset Instant CGPA data?")) {
+        form.reset();
+        totalCreditsEl.textContent = "0";
+        cgpaResultEl.textContent = "0.00";
+        localStorage.removeItem("gpaflex_instant_cgpa");
+      }
+    });
+  }
 }
 
 
@@ -296,6 +355,10 @@ function setupCgpaBySemester() {
   if (!form || !tableBody) return;
 
   const semesters = [];
+  try {
+    const saved = localStorage.getItem("gpaflex_cgpa_semesters");
+    if (saved) { semesters.push(...JSON.parse(saved)); }
+  } catch(e) {}
 
   function render() {
     tableBody.innerHTML = "";
@@ -330,6 +393,7 @@ function setupCgpaBySemester() {
         render();
       });
     });
+    localStorage.setItem("gpaflex_cgpa_semesters", JSON.stringify(semesters));
   }
 
   tableBody.addEventListener("click", (e) => {
@@ -433,6 +497,19 @@ function setupCgpaBySemester() {
       render();
     });
   }
+
+  const resetBtn = $("#resetCgpaBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset CGPA by Semester data?")) {
+        semesters.length = 0;
+        render();
+      }
+    });
+  }
+
+  // Initial render to show loaded semesters
+  setTimeout(render, 0);
 }
 
 function setupTargetGpaCalculator() {
@@ -578,6 +655,50 @@ function setupTargetGpaCalculator() {
       btn.classList.add("tab-btn-active");
     });
   });
+
+  try {
+    const saved = localStorage.getItem("gpaflex_target_gpa");
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.targetCgpaDesired) $("#targetCgpaDesired").value = data.targetCgpaDesired;
+      if (data.targetCurrentSemCredits) $("#targetCurrentSemCredits").value = data.targetCurrentSemCredits;
+      if (data.targetCurrentCgpa) $("#targetCurrentCgpa").value = data.targetCurrentCgpa;
+      if (data.targetCompletedCredits) $("#targetCompletedCredits").value = data.targetCompletedCredits;
+      if (data.targetDesiredCgpaManual) $("#targetDesiredCgpaManual").value = data.targetDesiredCgpaManual;
+      if (data.targetCurrentSemCreditsManual) $("#targetCurrentSemCreditsManual").value = data.targetCurrentSemCreditsManual;
+    }
+  } catch(e) {}
+
+  const cardNode = document.getElementById("targetGpaCard");
+  if (cardNode) {
+    cardNode.addEventListener("input", () => {
+      const data = {
+        targetCgpaDesired: $("#targetCgpaDesired").value,
+        targetCurrentSemCredits: $("#targetCurrentSemCredits").value,
+        targetCurrentCgpa: $("#targetCurrentCgpa").value,
+        targetCompletedCredits: $("#targetCompletedCredits").value,
+        targetDesiredCgpaManual: $("#targetDesiredCgpaManual").value,
+        targetCurrentSemCreditsManual: $("#targetCurrentSemCreditsManual").value
+      };
+      localStorage.setItem("gpaflex_target_gpa", JSON.stringify(data));
+    });
+  }
+
+  const resetBtn = $("#resetTargetGpaBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset Target GPA Calculator data?")) {
+        if (storedForm) storedForm.reset();
+        if (manualForm) manualForm.reset();
+        resultContainer.classList.add("hidden");
+        localStorage.removeItem("gpaflex_target_gpa");
+        const listContainer = document.getElementById("targetStoredSemestersList");
+        if (listContainer) {
+          listContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+      }
+    });
+  }
 }
 
 function setupThemeToggle() {
@@ -599,15 +720,27 @@ function setupFeatureNav() {
     "targetGpaCard",
     "importCard",
   ];
+  let currentIndex = 0;
 
   function switchCard(targetId) {
-    cardIds.forEach((id) => {
+    cardIds.forEach((id, index) => {
       const card = document.getElementById(id);
       if (!card) return;
       if (id === targetId) {
         card.classList.remove("hidden");
+        currentIndex = index;
       } else {
         card.classList.add("hidden");
+      }
+    });
+
+    // Update active tab styles and scroll it into view if nav is scrollable
+    tabs.forEach((tab) => {
+      if (tab.getAttribute("data-target") === targetId) {
+        tab.classList.add("feature-tab-active");
+        tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      } else {
+        tab.classList.remove("feature-tab-active");
       }
     });
   }
@@ -616,13 +749,48 @@ function setupFeatureNav() {
     tab.addEventListener("click", () => {
       const target = tab.getAttribute("data-target");
       if (!target) return;
-      document
-        .querySelectorAll(".feature-tab")
-        .forEach((btn) => btn.classList.remove("feature-tab-active"));
-      tab.classList.add("feature-tab-active");
       switchCard(target);
     });
   });
+
+  // Touch Swipe Logic
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  document.body.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  document.body.addEventListener("touchend", (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    
+    // Detect horizontal swipe
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+      // Check if the user is swiping inside a horizontal scrollable area (like a table)
+      const targetElement = e.target;
+      if (targetElement.closest('.table-wrapper') || targetElement.closest('.checkbox-list')) {
+         // Don't switch tabs if the user is scrolling a table horizontally
+         return;
+      }
+      
+      if (dx < 0) {
+        // Swipe Left -> Next tab
+        if (currentIndex < cardIds.length - 1) {
+          switchCard(cardIds[currentIndex + 1]);
+        }
+      } else {
+        // Swipe Right -> Prev tab
+        if (currentIndex > 0) {
+          switchCard(cardIds[currentIndex - 1]);
+        }
+      }
+    }
+  }, { passive: true });
 
   switchCard("gpaCalcCard");
 }
