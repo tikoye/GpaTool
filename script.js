@@ -123,7 +123,10 @@ function startRealtimeSync() {
         const currentData = localStorage.getItem(key);
         const newStr = JSON.stringify(newData || (key.endsWith('courses') || key.endsWith('semesters') ? [] : {}));
         if (currentData !== newStr) {
+          const prevSync = isLocalSyncing;
+          isLocalSyncing = true;
           localStorage.setItem(key, newStr);
+          isLocalSyncing = prevSync;
           changed = true;
         }
       };
