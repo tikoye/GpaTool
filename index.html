@@ -22,7 +22,7 @@
   </head>
   <body>
     <!-- Auth Overlay -->
-    <div id="authOverlay" class="auth-overlay">
+    <div id="authOverlay" class="auth-overlay" style="display: none;">
       <div class="auth-card">
         <svg class="logo-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; margin-bottom: 1rem;">
           <defs>
@@ -40,8 +40,25 @@
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 18px; height: 18px;" />
           Sign in with Google
         </button>
+        <button id="guestSignInBtn" class="secondary-button" style="width: 100%; margin-top: 0.75rem;">
+          Continue as Guest
+        </button>
         <p id="authErrorMsg" style="color: var(--danger); font-size: 0.85rem; margin-top: 1rem; display: none;"></p>
       </div>
+    </div>
+    
+    <!-- Full Screen Loader to prevent UI blink before auth resolves -->
+    <div id="initialLoader" class="auth-overlay" style="display: flex; background: var(--bg);">
+      <svg class="logo-icon spinner" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width: 64px; height: 64px;">
+        <defs>
+          <linearGradient id="logoGradLoader" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="32" height="32" rx="8" fill="url(#logoGradLoader)" opacity="0.9"/>
+        <text x="16" y="22" font-size="18" fill="#ecfdf5" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="bold">📊</text>
+      </svg>
     </div>
     <div id="app">
       <header class="app-header">
@@ -75,16 +92,25 @@
         </nav>
 
         <div class="header-actions">
-          <button id="userProfileBtn" class="icon-button" aria-label="User Profile" style="display: none; border-radius: 50%; padding: 0.2rem; overflow: hidden; width: 36px; height: 36px; background: none; border: 2px solid var(--border);">
+          <button id="headerLoginBtn" class="icon-button" aria-label="Login" style="display: none; font-weight: 600; padding: 0.35rem 0.8rem; border-color: var(--accent); color: var(--accent);">
+            Login
+          </button>
+          <button id="userProfileBtn" class="icon-button" aria-label="User Profile" style="display: none; border-radius: 50%; padding: 0.2rem; overflow: hidden; width: 36px; height: 36px; background: none; border: 2px solid var(--border-subtle);">
             <img id="userProfileImg" src="" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
           </button>
           <button id="installBtn" class="icon-button" aria-label="Install as app">
             <span class="icon">⬇️</span>
             <span>Install</span>
           </button>
-          <button id="themeToggle" class="icon-button" aria-label="Toggle theme">
-            <span class="icon">🌙</span>
-          </button>
+          <select id="themeDropdown" class="icon-button" aria-label="Select theme" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: var(--bg-elevated); color: var(--text); border: 1px solid var(--border-subtle); border-radius: 8px; outline: none;">
+            <option value="normal">Normal</option>
+            <option value="dracula">Dracula</option>
+            <option value="nord">Nord</option>
+            <option value="catppuccin">Catppuccin</option>
+            <option value="rose-pine">Rose Pine</option>
+            <option value="github">GitHub</option>
+            <option value="material">Material</option>
+          </select>
         </div>
       </header>
 
