@@ -20,28 +20,45 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let currentUser = null;
+let isGuest = false;
+let unsubscribeSnapshot = null;
+let isLocalSyncing = false;
 
 auth.onAuthStateChanged(user => {
+  const loader = document.getElementById("initialLoader");
+  if (loader) loader.style.display = "none";
+
   if (user) {
     if (user.email && user.email.endsWith("@vitstudent.ac.in")) {
       currentUser = user;
+      isGuest = false;
       document.getElementById("authOverlay").style.display = "none";
       document.getElementById("userProfileBtn").style.display = "flex";
+      const headerLoginBtn = document.getElementById("headerLoginBtn");
+      if (headerLoginBtn) headerLoginBtn.style.display = "none";
       document.getElementById("userProfileImg").src = user.photoURL || "";
       
-      if (!sessionStorage.getItem("gpaflex_synced")) {
-        sessionStorage.setItem("gpaflex_synced", "true");
-        syncFromCloud();
-      }
+      startRealtimeSync();
     } else {
       auth.signOut();
       document.getElementById("authErrorMsg").textContent = "Access denied: Please sign in with your @vitstudent.ac.in email.";
       document.getElementById("authErrorMsg").style.display = "block";
+      document.getElementById("authOverlay").style.display = "flex";
     }
   } else {
     currentUser = null;
-    document.getElementById("authOverlay").style.display = "flex";
+    if (!isGuest) {
+      document.getElementById("authOverlay").style.display = "flex";
+    }
     document.getElementById("userProfileBtn").style.display = "none";
+    const headerLoginBtn = document.getElementById("headerLoginBtn");
+    if (headerLoginBtn) {
+      headerLoginBtn.style.display = isGuest ? "flex" : "none";
+    }
+    if (unsubscribeSnapshot) {
+      unsubscribeSnapshot();
+      unsubscribeSnapshot = null;
+    }
   }
 });
 
@@ -61,40 +78,78 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const guestSignInBtn = document.getElementById("guestSignInBtn");
+  if (guestSignInBtn) {
+    guestSignInBtn.addEventListener("click", () => {
+      isGuest = true;
+      document.getElementById("authOverlay").style.display = "none";
+      document.getElementById("userProfileBtn").style.display = "none";
+      const headerLoginBtn = document.getElementById("headerLoginBtn");
+      if (headerLoginBtn) headerLoginBtn.style.display = "flex";
+    });
+  }
+
   const userProfileBtn = document.getElementById("userProfileBtn");
   if (userProfileBtn) {
     userProfileBtn.addEventListener("click", () => {
       if (confirm("Sign out of FlexGPA?")) {
-        sessionStorage.removeItem("gpaflex_synced");
         auth.signOut();
       }
     });
   }
+
+  const headerLoginBtn = document.getElementById("headerLoginBtn");
+  if (headerLoginBtn) {
+    headerLoginBtn.addEventListener("click", () => {
+      document.getElementById("authOverlay").style.display = "flex";
+      headerLoginBtn.style.display = "none";
+    });
+  }
 });
 
-async function syncFromCloud() {
+function startRealtimeSync() {
   if (!currentUser) return;
-  try {
-    const doc = await db.collection("users").doc(currentUser.uid).get();
+  
+  if (unsubscribeSnapshot) unsubscribeSnapshot();
+  
+  unsubscribeSnapshot = db.collection("users").doc(currentUser.uid).onSnapshot((doc) => {
+    if (isLocalSyncing) return; // Ignore if we caused the change
+    
     if (doc.exists) {
       const data = doc.data();
-      if (data.semesters) localStorage.setItem(STORAGE_KEYS.SEMESTERS, JSON.stringify(data.semesters));
-      if (data.gpaflex_semgpa_courses) localStorage.setItem("gpaflex_semgpa_courses", JSON.stringify(data.gpaflex_semgpa_courses));
-      if (data.gpaflex_instant_cgpa) localStorage.setItem("gpaflex_instant_cgpa", JSON.stringify(data.gpaflex_instant_cgpa));
-      if (data.gpaflex_cgpa_semesters) localStorage.setItem("gpaflex_cgpa_semesters", JSON.stringify(data.gpaflex_cgpa_semesters));
-      if (data.gpaflex_target_gpa) localStorage.setItem("gpaflex_target_gpa", JSON.stringify(data.gpaflex_target_gpa));
+      let changed = false;
       
-      // Reload page to reflect newly synced data
-      window.location.reload();
+      const checkAndSet = (key, newData) => {
+        const currentData = localStorage.getItem(key);
+        const newStr = JSON.stringify(newData || (key.endsWith('courses') || key.endsWith('semesters') ? [] : {}));
+        if (currentData !== newStr) {
+          localStorage.setItem(key, newStr);
+          changed = true;
+        }
+      };
+
+      checkAndSet(STORAGE_KEYS.SEMESTERS, data.semesters);
+      checkAndSet("gpaflex_semgpa_courses", data.gpaflex_semgpa_courses);
+      checkAndSet("gpaflex_instant_cgpa", data.gpaflex_instant_cgpa);
+      checkAndSet("gpaflex_cgpa_semesters", data.gpaflex_cgpa_semesters);
+      checkAndSet("gpaflex_target_gpa", data.gpaflex_target_gpa);
+      
+      if (changed) {
+        // Quick reload to show changes cleanly without flash
+        const loader = document.getElementById("initialLoader");
+        if (loader) loader.style.display = "flex";
+        setTimeout(() => window.location.reload(), 100);
+      }
     }
-  } catch(e) {
-    console.error("Error syncing from cloud:", e);
-  }
+  }, (e) => {
+    console.error("Error in realtime sync:", e);
+  });
 }
 
 async function syncToCloud() {
-  if (!currentUser) return;
+  if (!currentUser || isGuest) return;
   try {
+    isLocalSyncing = true;
     const data = {
       semesters: JSON.parse(localStorage.getItem(STORAGE_KEYS.SEMESTERS) || "{}"),
       gpaflex_semgpa_courses: JSON.parse(localStorage.getItem("gpaflex_semgpa_courses") || "[]"),
@@ -103,8 +158,11 @@ async function syncToCloud() {
       gpaflex_target_gpa: JSON.parse(localStorage.getItem("gpaflex_target_gpa") || "{}")
     };
     await db.collection("users").doc(currentUser.uid).set(data, { merge: true });
+    // Reset local sync flag after a short delay to allow snapshot to fire and be ignored
+    setTimeout(() => { isLocalSyncing = false; }, 1000);
   } catch(e) {
     console.error("Error syncing to cloud:", e);
+    isLocalSyncing = false;
   }
 }
 
@@ -174,17 +232,23 @@ function applyTheme(theme) {
   const root = document.documentElement;
   root.setAttribute("data-theme", theme);
   localStorage.setItem(STORAGE_KEYS.THEME, theme);
-  const themeToggle = $("#themeToggle .icon");
-  if (themeToggle) {
-    themeToggle.textContent = theme === "dark" ? "🌙" : "☀️";
+  const themeDropdown = $("#themeDropdown");
+  if (themeDropdown && themeDropdown.value !== theme) {
+    themeDropdown.value = theme;
   }
 }
 
 function initTheme() {
   const stored = localStorage.getItem(STORAGE_KEYS.THEME);
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = stored || (prefersDark ? "dark" : "light");
+  const theme = stored || "normal";
   applyTheme(theme);
+  
+  const themeDropdown = $("#themeDropdown");
+  if (themeDropdown) {
+    themeDropdown.addEventListener("change", (e) => {
+      applyTheme(e.target.value);
+    });
+  }
 }
 
 function getCurrentUsername() {
@@ -580,6 +644,10 @@ function setupCgpaBySemester() {
 
   if (addBtn && listContainer) {
     addBtn.addEventListener("click", () => {
+      if (isGuest) {
+        alert("Please sign in to add your stored semesters to CGPA. Guests can only use manual entry.");
+        return;
+      }
       const all = loadSemesters();
       const users = loadUsers();
       const username = Object.keys(users)[0];
@@ -1535,6 +1603,10 @@ function setupImportCard() {
   
   form.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (isGuest) {
+      alert("Please sign in to store and import semester data. Guest mode only allows manual entry.");
+      return;
+    }
     const username = getCurrentUsername();
     if (!username) {
       alert("Please sign in first to store semester data.");
