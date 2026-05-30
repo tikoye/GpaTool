@@ -1017,3 +1017,9 @@ body {
 .spinner {
   animation: spin 1s linear infinite;
 }
+
+@media (max-width: 480px) {
+  #installBtn span:not(.icon) { display: none; }
+  .header-actions { gap: 0.4rem; }
+  .feature-tab { padding: 0.4rem 0.5rem; font-size: 0.7rem; }
+}
