@@ -978,3 +978,7 @@ body {
   padding: 0.35rem 0.5rem;
   font-size: 0.85rem;
 }
+
+/* Auth Overlay */
+.auth-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
+.auth-card { background: var(--card-bg); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center; display: flex; flex-direction: column; align-items: center; }
