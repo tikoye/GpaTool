@@ -5,6 +5,127 @@ const STORAGE_KEYS = {
   SEMESTERS: "cgpa_companion_semesters",
 };
 
+// --- FIREBASE SETUP ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDfZWaLPBwWYvT3BPy3VzEpbxARVXH-jpU",
+  authDomain: "flexgpa.firebaseapp.com",
+  projectId: "flexgpa",
+  storageBucket: "flexgpa.firebasestorage.app",
+  messagingSenderId: "256581553015",
+  appId: "1:256581553015:web:67e79335e52360fb586f72",
+  measurementId: "G-6E76T27ZPR"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    if (user.email && user.email.endsWith("@vitstudent.ac.in")) {
+      currentUser = user;
+      document.getElementById("authOverlay").style.display = "none";
+      document.getElementById("userProfileBtn").style.display = "flex";
+      document.getElementById("userProfileImg").src = user.photoURL || "";
+      
+      if (!sessionStorage.getItem("gpaflex_synced")) {
+        sessionStorage.setItem("gpaflex_synced", "true");
+        syncFromCloud();
+      }
+    } else {
+      auth.signOut();
+      document.getElementById("authErrorMsg").textContent = "Access denied: Please sign in with your @vitstudent.ac.in email.";
+      document.getElementById("authErrorMsg").style.display = "block";
+    }
+  } else {
+    currentUser = null;
+    document.getElementById("authOverlay").style.display = "flex";
+    document.getElementById("userProfileBtn").style.display = "none";
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const googleSignInBtn = document.getElementById("googleSignInBtn");
+  if (googleSignInBtn) {
+    googleSignInBtn.addEventListener("click", () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      // Enforce the vitstudent.ac.in domain in the Google prompt
+      provider.setCustomParameters({
+        hd: "vitstudent.ac.in"
+      });
+      auth.signInWithPopup(provider).catch(err => {
+        document.getElementById("authErrorMsg").textContent = err.message;
+        document.getElementById("authErrorMsg").style.display = "block";
+      });
+    });
+  }
+
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  if (userProfileBtn) {
+    userProfileBtn.addEventListener("click", () => {
+      if (confirm("Sign out of FlexGPA?")) {
+        sessionStorage.removeItem("gpaflex_synced");
+        auth.signOut();
+      }
+    });
+  }
+});
+
+async function syncFromCloud() {
+  if (!currentUser) return;
+  try {
+    const doc = await db.collection("users").doc(currentUser.uid).get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.semesters) localStorage.setItem(STORAGE_KEYS.SEMESTERS, JSON.stringify(data.semesters));
+      if (data.gpaflex_semgpa_courses) localStorage.setItem("gpaflex_semgpa_courses", JSON.stringify(data.gpaflex_semgpa_courses));
+      if (data.gpaflex_instant_cgpa) localStorage.setItem("gpaflex_instant_cgpa", JSON.stringify(data.gpaflex_instant_cgpa));
+      if (data.gpaflex_cgpa_semesters) localStorage.setItem("gpaflex_cgpa_semesters", JSON.stringify(data.gpaflex_cgpa_semesters));
+      if (data.gpaflex_target_gpa) localStorage.setItem("gpaflex_target_gpa", JSON.stringify(data.gpaflex_target_gpa));
+      
+      // Reload page to reflect newly synced data
+      window.location.reload();
+    }
+  } catch(e) {
+    console.error("Error syncing from cloud:", e);
+  }
+}
+
+async function syncToCloud() {
+  if (!currentUser) return;
+  try {
+    const data = {
+      semesters: JSON.parse(localStorage.getItem(STORAGE_KEYS.SEMESTERS) || "{}"),
+      gpaflex_semgpa_courses: JSON.parse(localStorage.getItem("gpaflex_semgpa_courses") || "[]"),
+      gpaflex_instant_cgpa: JSON.parse(localStorage.getItem("gpaflex_instant_cgpa") || "{}"),
+      gpaflex_cgpa_semesters: JSON.parse(localStorage.getItem("gpaflex_cgpa_semesters") || "[]"),
+      gpaflex_target_gpa: JSON.parse(localStorage.getItem("gpaflex_target_gpa") || "{}")
+    };
+    await db.collection("users").doc(currentUser.uid).set(data, { merge: true });
+  } catch(e) {
+    console.error("Error syncing to cloud:", e);
+  }
+}
+
+// Hook into localStorage.setItem to auto-sync to cloud
+const originalSetItem = localStorage.setItem;
+localStorage.setItem = function(key, value) {
+  originalSetItem.apply(this, arguments);
+  const syncKeys = [
+    STORAGE_KEYS.SEMESTERS,
+    "gpaflex_semgpa_courses",
+    "gpaflex_instant_cgpa",
+    "gpaflex_cgpa_semesters",
+    "gpaflex_target_gpa"
+  ];
+  if (syncKeys.includes(key)) {
+    syncToCloud();
+  }
+};
+// --- END FIREBASE SETUP ---
+
+
 const gradeToPoints = {
   S: 10,
   A: 9,
