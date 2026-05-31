@@ -1056,10 +1056,6 @@ body {
 
 
 /* --- DEFINITIVE MOBILE FIXES --- */
-html, body {
-  overflow-x: hidden;
-  width: 100%;
-}
 
 @media (max-width: 768px) {
   /* Fix header pushing page too wide */
