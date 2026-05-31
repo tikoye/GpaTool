@@ -119,10 +119,36 @@ function startRealtimeSync() {
       const data = doc.data();
       let changed = false;
       
+      function deepEqual(obj1, obj2) {
+        if (obj1 === obj2) return true;
+        if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) return false;
+        const keys1 = Object.keys(obj1), keys2 = Object.keys(obj2);
+        if (keys1.length !== keys2.length) return false;
+        for (let key of keys1) {
+          if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false;
+        }
+        return true;
+      }
+
       const checkAndSet = (key, newData) => {
-        const currentData = localStorage.getItem(key);
-        const newStr = JSON.stringify(newData || (key.endsWith('courses') || key.endsWith('semesters') ? [] : {}));
-        if (currentData !== newStr) {
+        const currentDataStr = localStorage.getItem(key);
+        const defaultVal = (key.endsWith('courses') || key.endsWith('semesters')) ? [] : {};
+        const targetData = newData || defaultVal;
+        
+        let isDiff = false;
+        if (!currentDataStr) {
+          isDiff = true;
+        } else {
+          try {
+            const currentDataObj = JSON.parse(currentDataStr);
+            isDiff = !deepEqual(currentDataObj, targetData);
+          } catch(e) {
+            isDiff = true;
+          }
+        }
+        
+        if (isDiff) {
+          const newStr = JSON.stringify(targetData);
           const prevSync = isLocalSyncing;
           isLocalSyncing = true;
           localStorage.setItem(key, newStr);
@@ -141,7 +167,9 @@ function startRealtimeSync() {
         // Quick reload to show changes cleanly without flash
         const loader = document.getElementById("initialLoader");
         if (loader) loader.style.display = "flex";
-        setTimeout(() => window.location.reload(), 100);
+        // removed reload to stop flash loop
+        if (typeof renderStored === 'function') renderStored();
+        // Just let the user refresh manually if they want everything, or the real-time elements will update if possible
       }
     }
   }, (e) => {
