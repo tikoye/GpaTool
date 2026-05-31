@@ -111,6 +111,35 @@
   --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.08);
 }
 
+[data-theme="monochrome"] {
+  --bg: #fafafa;
+  --bg-elevated: #ffffff;
+  --bg-soft: #f4f4f5;
+  --accent: #171717;
+  --accent-soft: rgba(0, 0, 0, 0.08);
+  --accent-strong: #000000;
+  --text: #171717;
+  --text-muted: #52525b;
+  --border-subtle: rgba(0, 0, 0, 0.12);
+  --danger: #000000;
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="monochrome-dark"] {
+  --bg: #000000;
+  --bg-elevated: #0a0a0a;
+  --bg-soft: #171717;
+  --accent: #ffffff;
+  --accent-soft: rgba(255, 255, 255, 0.15);
+  --accent-strong: #ffffff;
+  --text: #ffffff;
+  --text-muted: #a1a1aa;
+  --border-subtle: rgba(255, 255, 255, 0.15);
+  --danger: #ffffff;
+  --shadow-soft: 0 4px 20px rgba(255, 255, 255, 0.05);
+  --btn-text: #000000;
+}
+
 html, body { 
   min-height: 100%;
   /* Native App Feel Optimizations */
@@ -451,7 +480,7 @@ body {
 
 .primary-button {
   background: var(--accent);
-  color: #f9fafb;
+  color: var(--btn-text, #f9fafb);
   box-shadow: 0 14px 30px var(--accent-soft);
 }
 
@@ -552,7 +581,7 @@ body {
 .data-table thead {
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.95),
+    var(--bg-elevated),
     var(--accent-soft)
   );
   color: var(--text);
@@ -1019,6 +1048,7 @@ body {
 }
 
 @media (max-width: 480px) {
+  #headerLoginBtn { padding: 0.35rem 0.5rem !important; font-size: 0.75rem !important; border-width: 1px !important; border-radius: 6px !important; }
   #installBtn span:not(.icon) { display: none; }
   .header-actions { gap: 0.4rem; }
   .feature-tab { padding: 0.4rem 0.5rem; font-size: 0.7rem; }
